@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# 1. Установка Марзбана
+echo "Установка Марзбана..."
+sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
+
+# 2. Распаковка архива на сервере
+echo "Распаковка архива Marzban..."
+archive=$(ls /root/marzban-*.tar.gz | head -n 1)
+if [ -z "$archive" ]; then
+    echo "Архив не найден."
+    exit 1
+fi
+tar -xvzf "$archive" -C /
+
+# 3. Запуск Марзбана
+echo "Запуск Марзбана..."
+sudo chmod 755 /var/lib/marzban/xray-core/xray
+marzban restart
+
+# 4. Открытие портов
+echo "Открытие портов..."
+sudo ufw --force enable
+sudo ufw default deny incoming
+sudo ufw allow 3001
+sudo ufw allow 3300
+sudo ufw allow 3443
+sudo ufw allow 3306
+sudo ufw allow 8000
+sudo ufw allow 8081
+sudo ufw allow 8443
+sudo ufw allow 40000
+sudo ufw allow 443
+sudo ufw allow 80
+sudo ufw allow 2443
+sudo ufw allow 22
+
+echo "Установка и настройка завершены."
