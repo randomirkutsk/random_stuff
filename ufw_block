@@ -6,9 +6,13 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Закрытие порта 22 для SSH
-echo "Закрываю порт 22 для SSH..."
-sudo ufw deny 22
+# Изменение порта SSH на 8222
+echo "Изменяю порт SSH на 8222..."
+sudo sed -i 's/^#Port 22/Port 8222/' /etc/ssh/sshd_config
+
+# Открытие нового порта 8222 через UFW
+echo "Открываю порт 8222 для SSH..."
+sudo ufw allow 8222/tcp
 
 # Создание пользователя random с рут правами
 echo "Создаю пользователя random..."
