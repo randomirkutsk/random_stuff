@@ -6,7 +6,7 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 
 # 2. Распаковка архива на сервере
 echo "Распаковка архива Marzban..."
-archive=$(ls /root/marzban-*.tar.gz | head -n 1)
+archive=$(ls /home/random/marzban-*.tar.gz | head -n 1)
 if [ -z "$archive" ]; then
     echo "Архив не найден."
     exit 1
