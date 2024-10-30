@@ -19,7 +19,7 @@ sudo ufw default deny incoming
 sudo ufw allow 40000
 sudo ufw allow 10050
 sudo ufw allow 443/tcp
-sudo ufw allow 56777
+sudo ufw allow 22
 sudo ufw allow 62050
 sudo ufw allow 62051
 sudo ufw allow 80
