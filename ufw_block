@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Проверка на наличие прав суперпользователя
+if [[ $EUID -ne 0 ]]; then
+    echo "Этот скрипт должен выполняться от имени суперпользователя (root)." 1>&2
+    exit 1
+fi
+
+# Закрытие порта 22 для SSH
+echo "Закрываю порт 22 для SSH..."
+sudo ufw deny 22
+
+# Создание пользователя random с рут правами
+echo "Создаю пользователя random..."
+username="random"
+password="VwZ-R8M-Gy4-fgL"  # Установленный пароль
+sudo useradd -m -s /bin/bash -G sudo $username
+echo "$username:$password" | sudo chpasswd
+
+# Запрет входа под пользователем root
+echo "Запрещаю вход под пользователем root..."
+sudo passwd -l root
+
+# Настройка SSH для разрешения входа только по ключу
+echo "Настраиваю SSH для разрешения входа только по ключу..."
+sudo sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+# Запрашиваем у пользователя ввод приватного ключа
+echo "Введите ваш приватный ключ (для завершения ввода нажмите Ctrl+D):"
+private_key=$(cat)
+
+# Создание директории для SSH и добавление приватного ключа
+echo "Добавляю приватный ключ..."
+sudo mkdir -p /home/$username/.ssh
+echo "$private_key" | sudo tee /home/$username/.ssh/id_rsa > /dev/null
+sudo chmod 600 /home/$username/.ssh/id_rsa
+sudo chown $username:$username /home/$username/.ssh/id_rsa
+
+# Перезапуск SSH
+sudo systemctl restart ssh
+
+echo "Настройка завершена. Вы можете входить в систему под пользователем $username с использованием ключа."
