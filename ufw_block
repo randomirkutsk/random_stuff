@@ -6,9 +6,39 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Изменение порта SSH на 8222
-echo "Изменяю порт SSH на 8222..."
-sudo sed -i 's/^#Port 22/Port 8222/' /etc/ssh/sshd_config
+# Создание резервной копии текущего файла конфигурации SSH
+echo "Создаю резервную копию текущего файла конфигурации SSH..."
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+
+# Настраиваю SSH конфигурацию
+echo "Настраиваю SSH конфигурацию..."
+{
+    echo "# Include /etc/ssh/sshd_config.d/*.conf"
+    echo "# Port 22"
+    echo "# PermitRootLogin yes"
+    echo "# PubkeyAuthentication yes"
+    echo "# AuthorizedKeysFile .ssh/authorized_keys"
+    echo "# PasswordAuthentication yes"
+    echo "# KbdInteractiveAuthentication yes"
+    echo "# UsePAM yes"
+    echo "# X11Forwarding yes"
+    echo "# PrintMotd yes"
+    echo "# AcceptEnv LANG LC_*"
+    echo "# Subsystem sftp /usr/lib/openssh/sftp-server"
+    echo ""
+    echo "Include /etc/ssh/sshd_config.d/*.conf"
+    echo "Port 8222"
+    echo "PermitRootLogin no"
+    echo "PubkeyAuthentication yes"
+    echo "AuthorizedKeysFile /home/random/.ssh/authorized_keys"
+    echo "PasswordAuthentication no"
+    echo "KbdInteractiveAuthentication no"
+    echo "UsePAM yes"
+    echo "X11Forwarding yes"
+    echo "PrintMotd no"
+    echo "AcceptEnv LANG LC_*"
+    echo "Subsystem sftp /usr/lib/openssh/sftp-server"
+} | sudo tee /etc/ssh/sshd_config > /dev/null
 
 # Открытие нового порта 8222 через UFW
 echo "Открываю порт 8222 для SSH..."
@@ -24,13 +54,6 @@ echo "$username:$password" | sudo chpasswd
 # Запрет входа под пользователем root
 echo "Запрещаю вход под пользователем root..."
 sudo passwd -l root
-
-# Настройка SSH для разрешения входа только по ключу
-echo "Настраиваю SSH для разрешения входа только по ключу..."
-sudo sed -i 's/^#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-sudo sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sudo sed -i 's/^#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-sudo sed -i 's/^#AuthorizedKeysFile .*/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
 
 # Создание пары ключей
 echo "Создаю пару SSH-ключей..."
