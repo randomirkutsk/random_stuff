@@ -6,12 +6,25 @@ sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/
 
 # 2. Распаковка архива на сервере
 echo "Распаковка архива Marzban..."
-archive=$(ls /home/random/marzban-*.tar.gz | head -n 1)
+archive=$(ls /home/random/marzban-*.tar.gz | head -n 1) 
 if [ -z "$archive" ]; then
     echo "Архив не найден."
     exit 1
 fi
-tar -xvzf "$archive" -C /
+tar -xvzf "$archive" -C /home/random/
+
+# Перемещение файлов в нужные папки
+echo "Перемещение файлов..."
+mkdir -p /opt/marzban/
+mv /home/random/.env /opt/marzban/ 2>/dev/null
+mv /home/random/docker-compose.yml /opt/marzban/ 2>/dev/null
+
+# Перемещение папки marzban в /var/lib/
+if [ -d /home/random/marzban ]; then
+    sudo mv /home/random/marzban /var/lib/
+else
+    echo "Папка /home/random/marzban не найдена для перемещения."
+fi
 
 # 3. Запуск Марзбана
 echo "Запуск Марзбана..."
