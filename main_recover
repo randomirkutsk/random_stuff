@@ -47,5 +47,5 @@ sudo ufw allow 443
 sudo ufw allow 80
 sudo ufw allow 2443
 sudo ufw allow 22
-
+cd && bash <(curl -fsSL https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh) w
 echo "Установка и настройка завершены."
