@@ -17,19 +17,15 @@ echo "Настройка брандмауэра UFW..."
 sudo ufw --force enable
 sudo ufw default deny incoming
 sudo ufw allow 40000
-sudo ufw allow 10050
 sudo ufw allow 443/tcp
 sudo ufw allow 22
 sudo ufw allow 62050
 sudo ufw allow 62051
 sudo ufw allow 80
-sudo ufw allow 2488
-sudo ufw allow 9100
-sudo ufw allow 2488/tcp
+sudo ufw allow 3443
 
 # Установка Warp
 echo "Установка Warp..."
-cd ~
-bash <(curl -fsSL git.io/warp.sh) proxy
+cd && bash <(curl -fsSL https://gitlab.com/fscarmen/warp/-/raw/main/menu.sh) w
 
 echo "Скрипт выполнен."
