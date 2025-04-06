@@ -1,0 +1,151 @@
+#!/bin/bash
+
+# Функция для установки UFW
+install_ufw() {
+    echo "Установка UFW..."
+    sudo apt install ufw
+    echo "UFW установлен."
+}
+
+# Функция для включения UFW
+enable_ufw() {
+    echo "Включение UFW..."
+    sudo ufw enable
+    echo "UFW включен."
+}
+
+# Функция для отключения UFW
+disable_ufw() {
+    echo "Отключение UFW..."
+    sudo ufw disable
+    echo "UFW отключен."
+}
+
+# Функция для проверки статуса UFW
+status_ufw() {
+    echo "Статус UFW:"
+    sudo ufw status verbose
+}
+
+# Функция для настройки базовых правил UFW
+setup_ufw_rules() {
+    echo "Настройка базовых правил UFW..."
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    echo "Базовые правила UFW настроены."
+}
+
+# Функция для разрешения порта в UFW
+allow_port() {
+    read -p "Введите номер порта для разрешения: " port
+    sudo ufw allow $port/tcp
+    echo "Порт $port разрешен."
+}
+
+# Функция для блокировки порта в UFW
+deny_port() {
+    read -p "Введите номер порта для блокировки: " port
+    sudo ufw deny $port/tcp
+    echo "Порт $port заблокирован."
+}
+
+# Функция для изменения порта SSH
+change_ssh_port() {
+    read -p "Введите новый порт для SSH: " new_port
+    sudo sed -i "s/^#Port 22/Port $new_port/" /etc/ssh/sshd_config
+    sudo ufw allow $new_port/tcp
+    sudo systemctl restart ssh
+    echo "Порт SSH изменен на $new_port и разрешен в UFW."
+}
+
+# Функция для установки Fail2Ban
+install_fail2ban() {
+    echo "Установка Fail2Ban..."
+    sudo apt install fail2ban
+    echo "Fail2Ban установлен."
+}
+
+# Функция для настройки Fail2Ban для SSH
+setup_fail2ban_ssh() {
+    echo "Настройка Fail2Ban для защиты SSH..."
+    sudo bash -c 'cat > /etc/fail2ban/jail.local' <<EOL
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+findtime = 300
+bantime = 600
+EOL
+    sudo systemctl restart fail2ban
+    echo "Fail2Ban настроен для защиты SSH."
+}
+
+# Функция для генерации новых SSH ключей
+generate_ssh_keys() {
+    echo "Генерация новых SSH ключей..."
+    sudo rm /etc/ssh/ssh_host_*
+    sudo ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key -N ""
+    sudo ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""
+    echo "Новые SSH ключи сгенерированы."
+}
+
+# Функция для удаления малых модулей Диффи-Хеллмана
+remove_weak_dh() {
+    echo "Удаление малых модулей Диффи-Хеллмана..."
+    sudo awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.safe
+    sudo mv /etc/ssh/moduli.safe /etc/ssh/moduli
+    echo "Малые модули Диффи-Хеллмана удалены."
+}
+
+# Функция для настройки ограничений на частоту подключений
+setup_connection_limits() {
+    echo "Настройка ограничений на частоту подключений..."
+    sudo iptables -I INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+    sudo iptables -I INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 10 --hitcount 10 -j DROP
+    sudo ip6tables -I INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+    sudo ip6tables -I INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 10 --hitcount 10 -j DROP
+    sudo apt install -y netfilter-persistent iptables-persistent
+    sudo netfilter-persistent save
+    echo "Ограничения на частоту подключений настроены."
+}
+
+# Главное меню
+while true; do
+    clear
+    echo "Меню управления безопасностью VPS:"
+    echo "1) Установить UFW"
+    echo "2) Включить UFW"
+    echo "3) Отключить UFW"
+    echo "4) Проверить статус UFW"
+    echo "5) Настроить базовые правила UFW"
+    echo "6) Разрешить порт в UFW"
+    echo "7) Заблокировать порт в UFW"
+    echo "8) Изменить порт SSH"
+    echo "9) Установить Fail2Ban"
+    echo "10) Настроить Fail2Ban для SSH"
+    echo "11) Сгенерировать новые SSH ключи"
+    echo "12) Удалить малые модули Диффи-Хеллмана"
+    echo "13) Настроить ограничения на частоту подключений"
+    echo "14) Выйти"
+    read -p "Выберите опцию: " choice
+    case $choice in
+        1) install_ufw ;;
+        2) enable_ufw ;;
+        3) disable_ufw ;;
+        4) status_ufw ;;
+        5) setup_ufw_rules ;;
+        6) allow_port ;;
+        7) deny_port ;;
+        8) change_ssh_port ;;
+        9) install_fail2ban ;;
+        10) setup_fail2ban_ssh ;;
+        11) generate_ssh_keys ;;
+        12) remove_weak_dh ;;
+        13) setup_connection_limits ;;
+        14) echo "Выход..."; break ;;
+        *) echo "Неверный выбор. Пожалуйста, попробуйте снова." ;;
+    esac
+    read -p "Нажмите Enter для продолжения..."
+done
