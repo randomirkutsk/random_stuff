@@ -113,7 +113,6 @@ setup_connection_limits() {
 
 # Главное меню
 while true; do
-    clear
     echo "Меню управления безопасностью VPS:"
     echo "1) Установить UFW"
     echo "2) Включить UFW"
@@ -147,5 +146,7 @@ while true; do
         14) echo "Выход..."; break ;;
         *) echo "Неверный выбор. Пожалуйста, попробуйте снова." ;;
     esac
+    echo
     read -p "Нажмите Enter для продолжения..."
+    clear
 done
