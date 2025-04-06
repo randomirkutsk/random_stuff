@@ -129,6 +129,7 @@ while true; do
     echo "13) Настроить ограничения на частоту подключений"
     echo "14) Выйти"
     read -p "Выберите опцию: " choice
+    echo
     case $choice in
         1) install_ufw ;;
         2) enable_ufw ;;
@@ -147,6 +148,7 @@ while true; do
         *) echo "Неверный выбор. Пожалуйста, попробуйте снова." ;;
     esac
     echo
-    read -p "Нажмите Enter для продолжения..."
+    echo "Возврат в меню через 3 секунды..."
+    sleep 3
     clear
 done
